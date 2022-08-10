@@ -8,6 +8,19 @@ from src.routing import do_not_have, not_in_metadata
 
 
 def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
+    """
+    It takes a subreddit name, an output directory, and an output json file name, and downloads the hot
+    posts from the subreddit to the output directory, and saves the metadata to the output json file
+    
+    Args:
+      subreddit: The subreddit to download from.
+      output_dir: The directory to save the images to.
+      output_json: The name of the JSON file that will be created.
+      save_metadata: If True, will save the metadata of the submission to a JSON file. Defaults to False
+    
+    Returns:
+      A tuple of the metadata file and a list of the downloaded files.
+    """
 
     reddit = get_reddit_session()
 
@@ -35,6 +48,7 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
             
     download_check = []
 
+    # Iterating through the hot posts in the subreddit.
     for submission in hot_posts:
         img_url = submission.url
         new_filename = f"{output_dir}/{submission.id}.{submission.url[submission.url.rindex('.')+1:]}"
@@ -53,6 +67,7 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
             print(f"{new_filename} already exists")
         submission_meta = {}
         new_filename = Path(new_filename)
+        # Checking if the submission is already in the metadata file.
         if save_metadata and not_in_metadata(submission, data_everything):
             if new_filename.exists():
                 submission_download = { "filename" : new_filename, "success" : True }
@@ -64,6 +79,7 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
                 for comment in submission.comments:
                     while True:
                         try:
+                            # Replacing the "More Comments" button with the actual comments.
                             submission.comments.replace_more()
                             break
                         except Exception:
@@ -72,19 +88,31 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
                     comments_list.append( { "id" : comment.id, "body" : comment.body, "replies" : []} )
                     if len(comment.replies) > 0:
                         for reply in comment.replies:
+                            # Appending the replies to the replies list.
                             replies_list.append( { "id" : reply.id, "body" : reply.body } )
                         comments_list[-1]["replies"] = replies_list
                 submission_meta = { "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : comments_list }
             else:
                 submission_meta = { "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : [] }
             data_everything["submissions"].append(submission_meta)
-            print(data_everything)
     
     with open(metadata_file, "w", encoding="utf-8") as g:
         json.dump(data_everything, g, indent=4)
     return (metadata_file, download_check)
     
 def get_hot_subreddits(subreddit_list, output_dir, output_json, save_metadata=False):
+    """
+    It takes a list of subreddits, and returns a list of the top 25 posts from each subreddit
+    
+    Args:
+      subreddit_list: a list of subreddits to scrape
+      output_dir: The directory where you want to save the images.
+      output_json: If you want to save the metadata of the posts, set this to True.
+      save_metadata: If True, will save the metadata of the posts in a json file. Defaults to False
+    
+    Returns:
+      A list of the subreddit names that were successfully downloaded.
+    """
     check_list = []
     for subreddit in subreddit_list:
         check_list.append(get_hot_subreddit(subreddit, output_dir, output_json, save_metadata))

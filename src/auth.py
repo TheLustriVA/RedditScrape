@@ -5,10 +5,13 @@ from user_agent import generate_navigator, generate_user_agent
 
 
 def get_reddit_session():
-    """_Return an authenticated Reddit session_
-
+    """
+    _"Return an authenticated Reddit session"_
+    
+    The function is named `get_reddit_session` and it returns an authenticated Reddit session
+    
     Returns:
-        _reddit_session_: _An authenticated reddit session_
+      A reddit session
     """
     load_dotenv()
 
