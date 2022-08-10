@@ -4,10 +4,10 @@ import json
 from time import sleep
 from src.auth import get_reddit_session
 from pathlib import Path
-from src.routing import do_not_have, not_in_metadata
+from src.routing import do_not_have, not_in_metadata, init_new_subreddit_folder
 
 
-def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
+def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
     """
     It takes a subreddit name, an output directory, and an output json file name, and downloads the hot
     posts from the subreddit to the output directory, and saves the metadata to the output json file
@@ -15,7 +15,6 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
     Args:
       subreddit: The subreddit to download from.
       output_dir: The directory to save the images to.
-      output_json: The name of the JSON file that will be created.
       save_metadata: If True, will save the metadata of the submission to a JSON file. Defaults to False
     
     Returns:
@@ -31,20 +30,18 @@ def get_hot_subreddit(subreddit, output_dir, output_json, save_metadata=False):
     out_dir = Path(output_dir)
     if out_dir.is_dir() is False:
         out_dir.mkdir(parents=True)
-
+# TO-DO: Fix this so that the metadata content exists on the first run through.
     if save_metadata:
-        metadata_file = Path(out_dir / output_json)
+        metadata_file = Path(out_dir / subreddit / "metadata.json")
         if metadata_file.is_file():
             print(metadata_file)
-            with open(metadata_file, "r", encoding="utf-8") as f:
-                data_everything = json.load(f)
+            try:
+                with open(metadata_file, "r", encoding="utf-8") as f:
+                    data_everything = json.load(f)
+            except json.decoder.JSONDecodeError:
+                data_everything = {"submissions" : []}
         else:
-            metadata_file.touch()
-            data_everything = {
-                "submissions" : [
-                    
-                ]
-            }
+            init_new_subreddit_folder(subreddit, out_dir)
             
     download_check = []
 

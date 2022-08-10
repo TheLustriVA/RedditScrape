@@ -1,4 +1,5 @@
 from pathlib import Path 
+import json
 
 def do_not_have(filename):
     """
@@ -30,3 +31,23 @@ def not_in_metadata(submission, metadata):
         if record["submission_id"] == submission.id:
             return False
     return True
+  
+def init_new_subreddit_folder(subreddit, output_dir):
+    """
+    It initializes a new folder for a subreddit.
+    
+    Args:
+      subreddit: The subreddit to initialize.
+      output_dir: The directory to initialize the folder in.
+    
+    Returns:
+      The name of the new folder.
+    """
+    new_folder = Path(output_dir) / subreddit
+    if new_folder.is_dir() is False:
+        new_folder.mkdir(parents=True)
+    with open(new_folder / "metadata.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "submissions" : []
+        }, f, indent=4)
+    return new_folder
