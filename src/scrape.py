@@ -30,7 +30,7 @@ def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
     out_dir = Path(output_dir)
     if out_dir.is_dir() is False:
         out_dir.mkdir(parents=True)
-# TO-DO: Fix this so that the metadata content exists on the first run through.
+
     if save_metadata:
         metadata_file = Path(out_dir / subreddit / "metadata.json")
         if metadata_file.is_file():
@@ -42,9 +42,14 @@ def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
                 data_everything = {"submissions" : []}
         else:
             init_new_subreddit_folder(subreddit, out_dir)
-            
+            print(f"New: {metadata_file}")
+            try:
+                with open(metadata_file, "r", encoding="utf-8") as f:
+                    data_everything = json.load(f)
+            except json.decoder.JSONDecodeError:
+                data_everything = {"submissions" : []}
     download_check = []
-
+    # TODO: Include an Alive_Bar with an indication of total progress through the subreddit.
     # Iterating through the hot posts in the subreddit.
     for submission in hot_posts:
         img_url = submission.url
@@ -88,29 +93,32 @@ def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
                             # Appending the replies to the replies list.
                             replies_list.append( { "id" : reply.id, "body" : reply.body } )
                         comments_list[-1]["replies"] = replies_list
-                submission_meta = { "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : comments_list }
+                # TODO: Write a Reader-object handler so that all metadata includes Author data for later cross-checking.
+                submission_meta = { "subreddit": subreddit, "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : comments_list }
             else:
-                submission_meta = { "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : [] }
+                submission_meta = { "subreddit": subreddit, "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : [] }
             data_everything["submissions"].append(submission_meta)
     
     with open(metadata_file, "w", encoding="utf-8") as g:
         json.dump(data_everything, g, indent=4)
     return (metadata_file, download_check)
     
-def get_hot_subreddits(subreddit_list, output_dir, output_json, save_metadata=False):
+def get_hot_subreddits(subreddit_list, output_dir, save_metadata=False):
     """
     It takes a list of subreddits, and returns a list of the top 25 posts from each subreddit
     
     Args:
       subreddit_list: a list of subreddits to scrape
       output_dir: The directory where you want to save the images.
-      output_json: If you want to save the metadata of the posts, set this to True.
       save_metadata: If True, will save the metadata of the posts in a json file. Defaults to False
+    
+    TODO: Include an Alive_Bar with an indication of which subreddit is being scraped.
     
     Returns:
       A list of the subreddit names that were successfully downloaded.
     """
     check_list = []
     for subreddit in subreddit_list:
-        check_list.append(get_hot_subreddit(subreddit, output_dir, output_json, save_metadata))
+        check_list.append(get_hot_subreddit(subreddit, output_dir, save_metadata))
     return check_list
+
