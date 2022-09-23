@@ -53,7 +53,7 @@ def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
     # Iterating through the hot posts in the subreddit.
     for submission in hot_posts:
         img_url = submission.url
-        new_filename = f"{output_dir}/{submission.id}.{submission.url[submission.url.rindex('.')+1:]}"
+        new_filename = f"{output_dir}/{subreddit}/{submission.id}.{submission.url[submission.url.rindex('.')+1:]}" # FIXME: This needs to be tested that it actually goes to the new Subreddit folder.
         if do_not_have(new_filename):
             try:
                 image_filename = wget.download(img_url, new_filename)
@@ -98,7 +98,7 @@ def get_hot_subreddit(subreddit, output_dir, save_metadata=False):
             else:
                 submission_meta = { "subreddit": subreddit, "submission_id" : submission.id, "submission_title" : submission.title, "submission_url" : submission.url, "submission_download" : submission_meta, "submission_comments" : [] }
             data_everything["submissions"].append(submission_meta)
-    
+    # TODO: Abstract all saving and downloading to a separate function and call it from routes.py.
     with open(metadata_file, "w", encoding="utf-8") as g:
         json.dump(data_everything, g, indent=4)
     return (metadata_file, download_check)
