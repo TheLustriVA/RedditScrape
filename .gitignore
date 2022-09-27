@@ -131,3 +131,4 @@ dmypy.json
 # folders
 src/fun/
 src/great/
+log.txt
