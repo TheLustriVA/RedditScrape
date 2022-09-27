@@ -2,6 +2,8 @@
 
 Low-Orbital-Tractor-Beam designed to be a simple platform for creating Reddit-interaction projects in a modular and extensible way.
 
+![Banner for Reddit Scraper](https://i.imgur.com/OAjhkqo.png)
+
 ## Aims
 
 1. Create a bullet-proof Reddit connection and authentication module
